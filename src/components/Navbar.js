@@ -178,7 +178,7 @@ function Navbar() {
                         to={'admin'}
                         style={{ textDecoration: "none", color: "white" }}
                       >
-                        admin
+                        ADMIN
                       </Link>
                     </Typography>
                   </MenuItem>}
