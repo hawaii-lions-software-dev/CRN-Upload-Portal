@@ -77,6 +77,17 @@ export default function Dashboard() {
     }
   };
 
+  const [filename, setFilename] = useState("");
+
+  const handleFileUpload = (e) => {
+    if (!e.target.files) {
+      return;
+    }
+    const file = e.target.files[0];
+    const { name } = file;
+    setFilename(name);
+  };
+
   return (
     <>
       <Container
@@ -91,17 +102,17 @@ export default function Dashboard() {
           options are selected, choose the file that you wish to upload, then
           press the submit button. Your upload will only be recieved if you
           press the "Submit" button. If successful, you should see a pop up with
-          a green checkmark. If you do not see a pop up, please contact the
+          a green checkmark. If you do not see a pop up, <strong>please contact the
           Hawaii Lions Information Technology Committee at
           information-technology@hawaiilions.org or Call Lion Kobey for IT
-          Support at (808)542-7606. Mahalo!
+          Support at (808)542-7606.</strong> Mahalo!
         </Typography>
         <br />
         <Typography variant="body1" gutterBottom>
-          If you need help or have questions, please contact the Hawaii Lions
+          If you need help or have questions, <strong>please contact the Hawaii Lions
           Information Technology Committee at
           information-technology@hawaiilions.org or Call Lion Kobey for IT
-          Support at (808)542-7606. Mahalo!
+          Support at (808)542-7606.</strong> Mahalo!
         </Typography>
         <br />
         <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
@@ -145,9 +156,11 @@ export default function Dashboard() {
             multiple={true}
             onChange={(event) => {
               setImageUpload(event.target.files);
+              handleFileUpload(event);
             }}
           />
         </Button>
+        &nbsp; File Choosen: { filename!=="" ? filename : "No File Selected" }
         <br />
         <br />
         <Button variant="outlined" onClick={uploadImage}>

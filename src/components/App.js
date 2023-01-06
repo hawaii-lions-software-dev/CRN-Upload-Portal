@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 import ForgotPassword from "./ForgotPassword";
 import EditProfile from "./EditProfile";
 import Navbar from "./Navbar";
+import Admin from "./Admin";
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
             element={
               <PrivateRoute>
                 <EditProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <Admin />
               </PrivateRoute>
             }
           />

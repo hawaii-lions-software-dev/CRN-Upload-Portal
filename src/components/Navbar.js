@@ -113,6 +113,17 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
+                  {currentUser.email==="lionjeffching@gmail.com" && 
+                  <MenuItem key="admin" onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center">
+                      <Link
+                        to={'admin'}
+                        style={{ textDecoration: "none", color: "black" }}
+                      >
+                        admin
+                      </Link>
+                    </Typography>
+                  </MenuItem>}
                   <MenuItem key="logout" onClick={handleCloseUserMenu}>
                     <Typography textAlign="center">
                       <Button
@@ -160,6 +171,17 @@ function Navbar() {
                     </Link>
                   </Button>
                 ))}
+                {currentUser.email==="lionjeffching@gmail.com" && 
+                  <MenuItem key="admin" onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center">
+                      <Link
+                        to={'admin'}
+                        style={{ textDecoration: "none", color: "white" }}
+                      >
+                        admin
+                      </Link>
+                    </Typography>
+                  </MenuItem>}
                 <MenuItem key="logout" onClick={handleCloseUserMenu}>
                   <Typography textAlign="center">
                     <Button
@@ -212,6 +234,17 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
+                  {currentUser.email==="lionjeffching@gmail.com" && 
+                  <MenuItem key="admin" onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center">
+                      <Link
+                        to={'admin'}
+                        style={{ textDecoration: "none", color: "black" }}
+                      >
+                        admin
+                      </Link>
+                    </Typography>
+                  </MenuItem>}
                   <MenuItem key="logout" onClick={handleCloseUserMenu}>
                     <Typography textAlign="center">
                       <Button onClick={handleLogout}>Log out</Button>
