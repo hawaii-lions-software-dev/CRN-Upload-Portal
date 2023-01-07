@@ -171,17 +171,19 @@ function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {currentUser.email==="lionjeffching@gmail.com" && 
-                  <MenuItem key="admin" onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">
-                      <Link
-                        to={'admin'}
-                        style={{ textDecoration: "none", color: "white" }}
-                      >
-                        ADMIN
-                      </Link>
-                    </Typography>
-                  </MenuItem>}
+                  {currentUser.email==="lionjeffching@gmail.com" && 
+                <Button
+                    key='admin'
+                    onClick={handleCloseUserMenu}
+                    sx={{ my: 2, color: "white", display: "block" }}
+                  >
+                    <Link
+                      to='/admin'
+                      style={{ textDecoration: "none", color: "white" }}
+                    >
+                      admin
+                    </Link>
+                  </Button>}
                 <MenuItem key="logout" onClick={handleCloseUserMenu}>
                   <Typography textAlign="center">
                     <Button

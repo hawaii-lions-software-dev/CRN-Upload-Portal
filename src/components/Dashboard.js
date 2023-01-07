@@ -14,6 +14,8 @@ import { getStorage, uploadBytes, ref } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 import { where, limit, query, collection } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
+import { Col, Row } from "react-bootstrap";
+import "../Dashboard.css";
 
 export default function Dashboard() {
   const storage = getStorage(app);
@@ -99,7 +101,7 @@ export default function Dashboard() {
         </Typography>
         <Typography variant="body1" gutterBottom>
           Please select the Cabinet Meeting Date and CRN Number. When these
-          options are selected, choose the file that you wish to upload, then
+          options are selected, choose the <strong>MICROSOFT WORD FILE!</strong> that you wish to upload, then
           press the submit button. Your upload will only be recieved if you
           press the "Submit" button. If successful, you should see a pop up with
           a green checkmark. If you do not see a pop up, <strong>please contact the
@@ -109,63 +111,75 @@ export default function Dashboard() {
         </Typography>
         <br />
         <Typography variant="body1" gutterBottom>
-          If you need help or have questions, <strong>please contact the Hawaii Lions
+          If you need help or have questions (could not upload file, website down, etc.), <strong>please contact the Hawaii Lions
           Information Technology Committee at
           information-technology@hawaiilions.org or Call Lion Kobey for IT
           Support at (808)542-7606.</strong> Mahalo!
         </Typography>
-        <br />
-        <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
-          <InputLabel>Cabinet Meeting Date</InputLabel>
-          <Select
-            label="Cabinet Meeting Date"
-            value={cabinetMeetingDate}
-            onChange={(event) => {
-              setCabinetMeetingDate(event.target.value);
-            }}
-          >
-            <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
-          </Select>
-        </FormControl>
-        <br />
-        <FormControl sx={{ m: 1, minWidth: 140 }} size="small">
-          <InputLabel>CRN Number</InputLabel>
-          <Select
-            label="CRN Number"
-            value={crnNumber}
-            onChange={(event) => {
-              setCrnNumber(event.target.value);
-            }}
-          >
-            {error && <strong>Error: {JSON.stringify(error)}</strong>}
-            {loading && <span>Collection: Loading...</span>}
-            {value &&
-              value.docs[0].data().CRNs.map((crn) => (
-                <MenuItem value={crn} key={crn}>
-                  {crn}
-                </MenuItem>
-              ))}
-          </Select>
-        </FormControl>
-        <br />
-        <Button variant="outlined" component="label">
-          Choose File
-          <input
-            type="file"
-            hidden
-            multiple={true}
-            onChange={(event) => {
-              setImageUpload(event.target.files);
-              handleFileUpload(event);
-            }}
-          />
-        </Button>
+        <Row className="padding-element">
+          <Col>
+            <FormControl sx={{ minWidth: 200 }} size="small">
+              <InputLabel>Cabinet Meeting Date</InputLabel>
+              <Select
+                label="Cabinet Meeting Date"
+                value={cabinetMeetingDate}
+                onChange={(event) => {
+                  setCabinetMeetingDate(event.target.value);
+                }}
+              >
+                <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
+              </Select>
+            </FormControl>
+          </Col>
+        </Row>
+        <Row className="padding-element">
+          <Col>
+          <FormControl sx={{ minWidth: 140 }} size="small">
+            <InputLabel>CRN Number</InputLabel>
+            <Select
+              label="CRN Number"
+              value={crnNumber}
+              onChange={(event) => {
+                setCrnNumber(event.target.value);
+              }}
+            >
+              {error && <strong>Error: {JSON.stringify(error)}</strong>}
+              {loading && <span>Collection: Loading...</span>}
+              {value &&
+                value.docs[0].data().CRNs.map((crn) => (
+                  <MenuItem value={crn} key={crn}>
+                    {crn}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+          </Col>
+        </Row>
+        <Row className="padding-element">
+          <Col>
+            <Button variant="outlined" component="label">
+              Choose File
+              <input
+                type="file"
+                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                hidden
+                multiple={true}
+                onChange={(event) => {
+                  setImageUpload(event.target.files);
+                  handleFileUpload(event);
+                }}
+              />
+            </Button>
         &nbsp; File Choosen: { filename!=="" ? filename : "No File Selected" }
-        <br />
-        <br />
-        <Button variant="outlined" onClick={uploadImage}>
-          Submit
-        </Button>
+          </Col>
+        </Row>
+        <Row className="padding-element">
+          <Col>
+            <Button variant="outlined" onClick={uploadImage}>
+              Submit
+            </Button>
+          </Col>
+        </Row>
       </Container>
     </>
   );
