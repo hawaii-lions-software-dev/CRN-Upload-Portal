@@ -64,7 +64,7 @@ export default function Dashboard() {
       for (let i = 0; i < imageUpload.length; i++) {
         const fileRef = ref(
           storage,
-          `${cabinetMeetingDate}/${crnNumber}-${new Date().toISOString()}-${
+          `${cabinetMeetingDate}/${crnNumber}-${currentUser.email}-${new Date().toISOString()}-${
             imageUpload[i].name
           }`
         );
