@@ -64,9 +64,9 @@ export default function Dashboard() {
       for (let i = 0; i < imageUpload.length; i++) {
         const fileRef = ref(
           storage,
-          `${cabinetMeetingDate}/${crnNumber}-${currentUser.email}-${new Date().toISOString()}-${
-            imageUpload[i].name
-          }`
+          `${cabinetMeetingDate}/${crnNumber}-${
+            currentUser.email
+          }-${new Date().toISOString()}-${imageUpload[i].name}`
         );
         uploadBytes(fileRef, imageUpload[i]).then(() => {
           Swal.fire(
@@ -101,20 +101,27 @@ export default function Dashboard() {
         </Typography>
         <Typography variant="body1" gutterBottom>
           Please select the Cabinet Meeting Date and CRN Number. When these
-          options are selected, choose the <strong>MICROSOFT WORD FILE!</strong> that you wish to upload, then
-          press the submit button. Your upload will only be recieved if you
-          press the "Submit" button. If successful, you should see a pop up with
-          a green checkmark. If you do not see a pop up, <strong>please contact the
-          Hawaii Lions Information Technology Committee at
-          information-technology@hawaiilions.org or Call Lion Kobey for IT
-          Support at (808)542-7606.</strong> Mahalo!
+          options are selected, choose the <strong>MICROSOFT WORD FILE!</strong>{" "}
+          that you wish to upload, then press the submit button. Your upload
+          will only be recieved if you press the "Submit" button. If successful,
+          you should see a pop up with a green checkmark. If you do not see a
+          pop up,{" "}
+          <strong>
+            please contact the Hawaii Lions Information Technology Committee at
+            information-technology@hawaiilions.org or Call Lion Kobey for IT
+            Support at (808)542-7606.
+          </strong>{" "}
+          Mahalo!
         </Typography>
-        <br />
-        <Typography variant="body1" gutterBottom>
-          If you need help or have questions (could not upload file, website down, etc.), <strong>please contact the Hawaii Lions
-          Information Technology Committee at
-          information-technology@hawaiilions.org or Call Lion Kobey for IT
-          Support at (808)542-7606.</strong> Mahalo!
+        <Typography variant="body1" gutterBottom className="padding-element">
+          If you need help or have questions (could not upload file, website
+          down, etc.),{" "}
+          <strong>
+            please contact the Hawaii Lions Information Technology Committee at
+            information-technology@hawaiilions.org or Call Lion Kobey for IT
+            Support at (808)542-7606.
+          </strong>{" "}
+          Mahalo!
         </Typography>
         <Row className="padding-element">
           <Col>
@@ -134,25 +141,25 @@ export default function Dashboard() {
         </Row>
         <Row className="padding-element">
           <Col>
-          <FormControl sx={{ minWidth: 140 }} size="small">
-            <InputLabel>CRN Number</InputLabel>
-            <Select
-              label="CRN Number"
-              value={crnNumber}
-              onChange={(event) => {
-                setCrnNumber(event.target.value);
-              }}
-            >
-              {error && <strong>Error: {JSON.stringify(error)}</strong>}
-              {loading && <span>Collection: Loading...</span>}
-              {value &&
-                value.docs[0].data().CRNs.map((crn) => (
-                  <MenuItem value={crn} key={crn}>
-                    {crn}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
+            <FormControl sx={{ minWidth: 140 }} size="small">
+              <InputLabel>CRN Number</InputLabel>
+              <Select
+                label="CRN Number"
+                value={crnNumber}
+                onChange={(event) => {
+                  setCrnNumber(event.target.value);
+                }}
+              >
+                {error && <strong>Error: {JSON.stringify(error)}</strong>}
+                {loading && <span>Collection: Loading...</span>}
+                {value &&
+                  value.docs[0].data().CRNs.map((crn) => (
+                    <MenuItem value={crn} key={crn}>
+                      {crn}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
           </Col>
         </Row>
         <Row className="padding-element">
@@ -170,7 +177,8 @@ export default function Dashboard() {
                 }}
               />
             </Button>
-        &nbsp; File Choosen: { filename!=="" ? filename : "No File Selected" }
+            &nbsp; File Choosen:{" "}
+            {filename !== "" ? filename : "No File Selected"}
           </Col>
         </Row>
         <Row className="padding-element">
