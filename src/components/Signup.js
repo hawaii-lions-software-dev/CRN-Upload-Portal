@@ -13,7 +13,7 @@ export default function Signup() {
           <h2 className="text-center mb-4">Sign Up Disabled</h2>
           <Card.Body>
             To Sign Up, Contact the D50 Hawaii Lions Information Technology
-            Committee at information-technology@hawaiilions.org or Call Lion
+            Committee at informationtechnology@hawaiilions.org or Call Lion
             Kobey at (808)542-7606
           </Card.Body>
         </Card>

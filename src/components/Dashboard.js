@@ -57,7 +57,7 @@ export default function Dashboard() {
     } else if (imageUpload.length > 5) {
       Swal.fire(
         "File Limit Reached",
-        "You are not allowed to submit more than 5 files for your CRN. Please contact the Hawaii Lions Information Technology Committee at information-technology@hawaiilions.org or Call Lion Kobey for IT Support at (808)542-7606 for assistance.",
+        "You are not allowed to submit more than 5 files for your CRN. Please contact the Hawaii Lions Information Technology Committee at informationtechnology@hawaiilions.org or Call Lion Kobey for IT Support at (808)542-7606 for assistance.",
         "error"
       );
     } else {
@@ -108,7 +108,7 @@ export default function Dashboard() {
           pop up,{" "}
           <strong>
             please contact the Hawaii Lions Information Technology Committee at
-            information-technology@hawaiilions.org or Call Lion Kobey for IT
+            informationtechnology@hawaiilions.org or Call Lion Kobey for IT
             Support at (808)542-7606.
           </strong>{" "}
           Mahalo!
@@ -118,7 +118,7 @@ export default function Dashboard() {
           down, etc.),{" "}
           <strong>
             please contact the Hawaii Lions Information Technology Committee at
-            information-technology@hawaiilions.org or Call Lion Kobey for IT
+            informationtechnology@hawaiilions.org or Call Lion Kobey for IT
             Support at (808)542-7606.
           </strong>{" "}
           Mahalo!
