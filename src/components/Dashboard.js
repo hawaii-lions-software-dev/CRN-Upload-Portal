@@ -134,7 +134,7 @@ export default function Dashboard() {
                   setCabinetMeetingDate(event.target.value);
                 }}
               >
-                <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
+                <MenuItem value={"04-27-2023"}>4/27/2023</MenuItem>
               </Select>
             </FormControl>
           </Col>
@@ -153,7 +153,7 @@ export default function Dashboard() {
                 {error && <strong>Error: {JSON.stringify(error)}</strong>}
                 {loading && <span>Collection: Loading...</span>}
                 {value &&
-                  value.docs[0].data().CRNs.map((crn) => (
+                  value.docs?.[0]?.data()?.CRNs?.map((crn) => (
                     <MenuItem value={crn} key={crn}>
                       {crn}
                     </MenuItem>

@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 import { Form, Button, Card, Alert, Container } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { firestore } from "../firebase";
+import { where, limit, query, collection, setDoc, getDocs, doc } from "firebase/firestore";
 
 export default function EditProfile() {
   const emailRef = useRef();
@@ -12,7 +14,7 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (passwordRef.current.value !== passwordConfirmRef.current.value) {
       return setError("Passwords do not match");
@@ -23,6 +25,11 @@ export default function EditProfile() {
     setError("");
 
     if (emailRef.current.value !== currentUser.email) {
+      const q = query(collection(firestore, "users"), where("email", "==", currentUser.email), limit(1));
+      getDocs(q).then((querySnapshot) => {
+          const userDoc = doc(firestore, "users/" + querySnapshot.docs[0].id);
+          promises.push(setDoc(userDoc, {email: emailRef.current.value}, {merge: true}));
+      });
       promises.push(localUpdateEmail(emailRef.current.value));
     }
     if (passwordRef.current.value) {

@@ -70,6 +70,7 @@ export default function Admin() {
                 }}
               >
                 <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
+                <MenuItem value={"04-27-2023"}>4/27/2023</MenuItem>
               </Select>
             </FormControl>
             <Button onClick={handleExportFileClick}>
