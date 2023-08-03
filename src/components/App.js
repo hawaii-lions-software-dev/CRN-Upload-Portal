@@ -4,7 +4,8 @@ import { AuthProvider } from "../contexts/AuthContext";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import Login from "./Login";
-import PrivateRoute from "./PrivateRoute";
+import LoginGuard from "./LoginGuard";
+import AdminGuard from "./AdminGuard";
 import ForgotPassword from "./ForgotPassword";
 import EditProfile from "./EditProfile";
 import Navbar from "./Navbar";
@@ -19,25 +20,25 @@ function App() {
           <Route
             path="/"
             element={
-              <PrivateRoute>
+              <LoginGuard>
                 <Dashboard />
-              </PrivateRoute>
+              </LoginGuard>
             }
           />
           <Route
             path="/edit-profile"
             element={
-              <PrivateRoute>
+              <LoginGuard>
                 <EditProfile />
-              </PrivateRoute>
+              </LoginGuard>
             }
           />
           <Route
             path="/admin"
             element={
-              <PrivateRoute>
+              <AdminGuard>
                 <Admin />
-              </PrivateRoute>
+              </AdminGuard>
             }
           />
           <Route path="/signup" element={<Signup />} />

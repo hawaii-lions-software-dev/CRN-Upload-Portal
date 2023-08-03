@@ -26,9 +26,9 @@ export default function Dashboard() {
 
   const [value, loading, error] = useCollection(
     query(
-      collection(firestore, "users"),
-      where("email", "==", currentUser.email),
-      limit(1)
+      collection(firestore, "crnUsers"),
+      where("email", "array-contains", currentUser.email),
+      limit(10)
     )
   );
 
@@ -134,8 +134,8 @@ export default function Dashboard() {
                   setCabinetMeetingDate(event.target.value);
                 }}
               >
-                {/* <MenuItem value={"04-27-2023"}>4/27/2023</MenuItem> */}
-                <MenuItem value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem>
+                <MenuItem value={"08-26-2023"}>8/26/2023</MenuItem>
+                {/* <MenuItem value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem> */}
               </Select>
             </FormControl>
           </Col>
@@ -154,9 +154,9 @@ export default function Dashboard() {
                 {error && <strong>Error: {JSON.stringify(error)}</strong>}
                 {loading && <span>Collection: Loading...</span>}
                 {value &&
-                  value.docs?.[0]?.data?.()?.CRNs?.map((crn) => (
-                    <MenuItem value={crn} key={crn}>
-                      {crn}
+                  value.docs?.map((crn) => (
+                    <MenuItem value={crn.id} key={crn.id}>
+                      {crn.id}
                     </MenuItem>
                   ))}
               </Select>
