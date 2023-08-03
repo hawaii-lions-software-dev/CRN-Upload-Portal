@@ -1,15 +1,15 @@
 import React, { useRef, useState } from "react";
 import { Form, Button, Card, Alert, Container } from "react-bootstrap";
-import { useAuth } from "../contexts/AuthContext";
+// import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import { firestore } from "../firebase";
-import { where, limit, query, collection, setDoc, getDocs, doc } from "firebase/firestore";
+// import { firestore } from "../firebase";
+// import { where, limit, query, collection, setDoc, getDocs, doc } from "firebase/firestore";
 
 export default function EditProfile() {
-  const emailRef = useRef();
+  // const emailRef = useRef();
   const passwordRef = useRef();
   const passwordConfirmRef = useRef();
-  const { currentUser, localUpdatePassword, localUpdateEmail } = useAuth();
+  // const { currentUser, localUpdatePassword, localUpdateEmail } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,17 +24,17 @@ export default function EditProfile() {
     setLoading(true);
     setError("");
 
-    if (emailRef.current.value !== currentUser.email) {
-      const q = query(collection(firestore, "users"), where("email", "==", currentUser.email), limit(1));
-      getDocs(q).then((querySnapshot) => {
-          const userDoc = doc(firestore, "users/" + querySnapshot.docs[0].id);
-          promises.push(setDoc(userDoc, {email: emailRef.current.value}, {merge: true}));
-      });
-      promises.push(localUpdateEmail(emailRef.current.value));
-    }
-    if (passwordRef.current.value) {
-      promises.push(localUpdatePassword(passwordRef.current.value));
-    }
+    // if (emailRef.current.value !== currentUser.email) {
+    //   const q = query(collection(firestore, "users"), where("email", "==", currentUser.email), limit(1));
+    //   getDocs(q).then((querySnapshot) => {
+    //       const userDoc = doc(firestore, "users/" + querySnapshot.docs[0].id);
+    //       promises.push(setDoc(userDoc, {email: emailRef.current.value}, {merge: true}));
+    //   });
+    //   promises.push(localUpdateEmail(emailRef.current.value));
+    // }
+    // if (passwordRef.current.value) {
+    //   promises.push(localUpdatePassword(passwordRef.current.value));
+    // }
 
     Promise.all(promises)
       .then(() => {
@@ -60,7 +60,7 @@ export default function EditProfile() {
               <h2 className="text-center mb-4">Update Profile</h2>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
-                <Form.Group id="email">
+                {/* <Form.Group id="email">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
@@ -68,7 +68,7 @@ export default function EditProfile() {
                     required
                     defaultValue={currentUser.email}
                   />
-                </Form.Group>
+                </Form.Group> */}
                 <Form.Group id="password">
                   <Form.Label>Password</Form.Label>
                   <Form.Control
