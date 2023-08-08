@@ -13,6 +13,7 @@ import { app, firestore } from "../firebase";
 import { getStorage, uploadBytes, ref } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 import { where, limit, query, collection } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { Col, Row } from "react-bootstrap";
 import "../Dashboard.css";
@@ -23,6 +24,8 @@ export default function Dashboard() {
   const [crnNumber, setCrnNumber] = useState("");
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
   const { currentUser } = useAuth();
+  const functions = getFunctions(app);
+  const sendMail = httpsCallable(functions, 'sendMail2');
 
   const [value, loading, error] = useCollection(
     query(
@@ -75,6 +78,12 @@ export default function Dashboard() {
             "success"
           );
         });
+        sendMail({ crn: crnNumber, dest: currentUser.email })
+          .then((result) => {
+            // Read result of the Cloud Function.
+            var sanitizedMessage = result.data.text;
+            console.log(sanitizedMessage);
+          });
       }
     }
   };
