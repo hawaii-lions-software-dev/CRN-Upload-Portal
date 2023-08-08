@@ -27,7 +27,7 @@ exports.sendMail = functions.https.onRequest((req, res) => {
       html: text
     };
     sgMail.setApiKey(
-      "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"
+      "apiKeyHere"
     );
     sgMail.send(msg);
     res.status(200).send("success "+dest+" "+crn);
@@ -57,7 +57,7 @@ exports.sendMail2 = functions.runWith({ enforceAppCheck: true }).https.onCall((d
     html: text
   };
   sgMail.setApiKey(
-    "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"
+    "apiKeyHere"
   );
   sgMail.send(msg);
   return "success "+data.dest+" "+data.crn;
