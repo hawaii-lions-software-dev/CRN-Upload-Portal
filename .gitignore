@@ -4,6 +4,9 @@
 /node_modules
 /.pnp
 .pnp.js
+/.firebase
+/functions/node_modules
+/functions/sendgrid.env
 
 # testing
 /coverage
