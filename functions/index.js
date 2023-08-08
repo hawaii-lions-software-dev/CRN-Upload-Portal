@@ -27,7 +27,7 @@ exports.sendMail = functions.https.onRequest((req, res) => {
       html: text
     };
     sgMail.setApiKey(
-      "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"
+      "apiKeyHere"
     );
     sgMail.send(msg);
     res.status(200).send("success "+dest+" "+crn);
