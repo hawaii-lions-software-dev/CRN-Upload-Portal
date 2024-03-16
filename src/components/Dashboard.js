@@ -26,6 +26,7 @@ export default function Dashboard() {
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
   const sendMail = httpsCallable(functions, 'sendMail2');
+  const dates = [{ value: '03-30-2024', text: '3/30/2024', dueDate: new Date("2024-03-12T00:00:00") }]
 
   const [value, loading, error] = useCollection(
     query(
@@ -143,8 +144,10 @@ export default function Dashboard() {
                   setCabinetMeetingDate(event.target.value);
                 }}
               >
-                <MenuItem value={"08-26-2023"}>8/26/2023</MenuItem>
-                {/* <MenuItem value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem> */}
+                {dates.map((date) => (
+                  (new Date() < date.dueDate) ? <MenuItem value={date.value}>{date.text}</MenuItem> : <MenuItem value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem>
+                ))
+                }
               </Select>
             </FormControl>
           </Col>

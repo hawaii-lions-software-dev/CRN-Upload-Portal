@@ -28,7 +28,7 @@ const downloadFolderAsZip = async (cabinetMeetingDate) => {
     .reduce((acc, curr) => acc.then(() => curr), Promise.resolve());
   await promises;
   const blob = await jszip.generateAsync({ type: "blob" });
-  saveAs(blob, "download.zip");
+  saveAs(blob, `${cabinetMeetingDate}-CRNs.zip`);
 };
 
 export default function Admin() {
@@ -72,6 +72,8 @@ export default function Admin() {
                 <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
                 <MenuItem value={"04-27-2023"}>4/27/2023</MenuItem>
                 <MenuItem value={"08-26-2023"}>8/26/2023</MenuItem>
+                <MenuItem value={"11-18-2023"}>11/18/2023</MenuItem>
+                <MenuItem value={"01-27-2024"}>1/27/2024</MenuItem>
               </Select>
             </FormControl>
             <Button onClick={handleExportFileClick}>
