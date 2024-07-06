@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Form, Button, Card, Alert, Container } from "react-bootstrap";
-// import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 // import { firestore } from "../firebase";
 // import { where, limit, query, collection, setDoc, getDocs, doc } from "firebase/firestore";
@@ -10,6 +10,7 @@ export default function EditProfile() {
   const passwordRef = useRef();
   const passwordConfirmRef = useRef();
   // const { currentUser, localUpdatePassword, localUpdateEmail } = useAuth();
+  const { localUpdatePassword } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,9 +33,9 @@ export default function EditProfile() {
     //   });
     //   promises.push(localUpdateEmail(emailRef.current.value));
     // }
-    // if (passwordRef.current.value) {
-    //   promises.push(localUpdatePassword(passwordRef.current.value));
-    // }
+    if (passwordRef.current.value) {
+      promises.push(localUpdatePassword(passwordRef.current.value));
+    }
 
     Promise.all(promises)
       .then(() => {

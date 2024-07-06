@@ -113,7 +113,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {currentUser.email === "adriellam@hawaiilions.org" && (
+                  {currentUser.email === "garynip@hawaiilions.org" && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link
@@ -172,7 +172,7 @@ function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {currentUser.email === "adriellam@hawaiilions.org" && (
+                {currentUser.email === "garynip@hawaiilions.org" && (
                   <Button
                     key="admin"
                     onClick={handleCloseUserMenu}
@@ -238,7 +238,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {currentUser.email === "adriellam@hawaiilions.org" && (
+                  {currentUser.email === "garynip@hawaiilions.org" && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link

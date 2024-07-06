@@ -26,7 +26,7 @@ export default function Dashboard() {
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
   const sendMail = httpsCallable(functions, 'sendMail2');
-  const dates = [{ value: '03-30-2024', text: '3/30/2024', dueDate: new Date("2024-03-12T00:00:00") }]
+  const dates = [{ value: '07-20-2024', text: '7/20/2024', dueDate: new Date("2024-07-11T00:00:00") }]
 
   const [value, loading, error] = useCollection(
     query(

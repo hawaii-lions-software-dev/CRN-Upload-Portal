@@ -5,5 +5,5 @@ import { useAuth } from "../contexts/AuthContext";
 export default function LoginGuard({ children }) {
   const { currentUser } = useAuth();
 
-  return currentUser.email === "adriellam@hawaiilions.org" ? children : <Navigate to="/" />;
+  return (currentUser.email === "garynip@hawaiilions.org") ? children : <Navigate to="/" />;
 }
