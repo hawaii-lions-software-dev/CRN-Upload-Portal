@@ -17,6 +17,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { Col, Row } from "react-bootstrap";
 import "../Dashboard.css";
+import { getDates } from "../utils/authHelpers";
 
 export default function Dashboard() {
   const storage = getStorage(app);
@@ -25,8 +26,8 @@ export default function Dashboard() {
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
-  const sendMail = httpsCallable(functions, 'sendMail2');
-  const dates = [{ value: '07-20-2024', text: '7/20/2024', dueDate: new Date("2024-07-11T00:00:00") }]
+  const sendMail = httpsCallable(functions, 'sendMail');
+  const dates = getDates();
 
   const [value, loading, error] = useCollection(
     query(

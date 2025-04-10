@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Alert } from "react-bootstrap";
+import { isAdmin } from "../utils/authHelpers";
 
 const pages = ["edit-profile"];
 const settings = ["edit-profile"];
@@ -113,7 +114,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {currentUser.email === "garynip@hawaiilions.org" && (
+                  {isAdmin(currentUser.email) && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link
@@ -172,7 +173,7 @@ function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {currentUser.email === "garynip@hawaiilions.org" && (
+                {isAdmin(currentUser.email) && (
                   <Button
                     key="admin"
                     onClick={handleCloseUserMenu}
@@ -238,7 +239,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {currentUser.email === "garynip@hawaiilions.org" && (
+                  {isAdmin(currentUser.email) && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link

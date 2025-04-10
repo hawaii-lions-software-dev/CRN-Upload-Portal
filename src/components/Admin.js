@@ -11,6 +11,7 @@ import {
   Select,
 } from "@mui/material";
 import Swal from "sweetalert2";
+import { adminDates } from "../utils/authHelpers";
 
 const downloadFolderAsZip = async (cabinetMeetingDate) => {
   const jszip = new JSZip();
@@ -32,6 +33,7 @@ const downloadFolderAsZip = async (cabinetMeetingDate) => {
 };
 
 export default function Admin() {
+  const dates = adminDates();
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
 
   const handleExportFileClick = () => {
@@ -69,12 +71,11 @@ export default function Admin() {
                   setCabinetMeetingDate(event.target.value);
                 }}
               >
-                <MenuItem value={"01-28-2023"}>1/28/2023</MenuItem>
-                <MenuItem value={"04-27-2023"}>4/27/2023</MenuItem>
-                <MenuItem value={"08-26-2023"}>8/26/2023</MenuItem>
-                <MenuItem value={"11-18-2023"}>11/18/2023</MenuItem>
-                <MenuItem value={"01-27-2024"}>1/27/2024</MenuItem>
-                <MenuItem value={"04-26-2024"}>4/26/2024</MenuItem>
+                {
+                  dates.map((date) => (
+                    <MenuItem value={date.value}>{date.text}</MenuItem>
+                  ))
+                }
               </Select>
             </FormControl>
             <Button onClick={handleExportFileClick}>
