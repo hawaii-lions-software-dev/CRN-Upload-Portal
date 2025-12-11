@@ -4,7 +4,7 @@ export function isAdmin(email) {
 }
 
 export function getDates() {
-    return [{ value: '10-25-2025', text: '10/25/2025', dueDate: new Date("2025-10-17T23:59:59") }]
+    return [{ value: '01-31-2026', text: '1/31/2026', dueDate: new Date("2026-01-31T23:59:59") }]
 }
 
 export function adminDates() {
@@ -21,5 +21,6 @@ export function adminDates() {
         { value: '05-01-2025', text: '5/1/2025' },
         { value: '08-09-2025', text: '8/9/2025' },
         { value: '10-25-2025', text: '10/25/2025' },
+        { value: '01-31-2026', text: '1/31/2026' },
     ]
 }
