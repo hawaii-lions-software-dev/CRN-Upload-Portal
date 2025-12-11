@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import React, { useState } from "react";
 import { Card, Container, Modal } from "react-bootstrap";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { getStorage, listAll, ref, getDownloadURL } from "firebase/storage";
 import {
   Button,
@@ -104,7 +104,9 @@ export default function Admin() {
           setModalError("Document found, but no 'email' array field present.");
         }
       } else {
-        setModalError("No document found for this CRN number.");
+        // Create new document with empty email array
+        await setDoc(docRef, { email: [] });
+        setModalData([]);
       }
     } catch (err) {
       setModalError("Error fetching document: " + err.message);
@@ -131,6 +133,17 @@ export default function Admin() {
     >
       <div className="w-100" style={{ maxWidth: "400px" }}>
         <h1 className="text-center mb-4">Admin Panel</h1>
+
+        <Card>
+          <h2 className="text-center mb-4">New Cabinet Meetings</h2>
+          <Card.Body>
+            To create new cabinet meetings, please contact Kobey Arai at kobeyarai@hawaiilions.org. Specify date of the cabinet meeting and CRN Portal submission close date. Functionality to do so in the portal will be created at a later date.
+          </Card.Body>
+        </Card>
+
+        <br />
+
+
         <Card>
           <h2 className="text-center mb-4">Export CRNs</h2>
           <Card.Body>
@@ -166,6 +179,9 @@ export default function Admin() {
         <Card>
           <h2 className="text-center mb-4">CRN Number Changes</h2>
           <Card.Body>
+            Use this to View/Update who has access to a specific CRN number.
+            <br />
+            <br />
             <div style={{ marginBottom: 16 }}>
               <label htmlFor="crnNumberInput">Enter CRN Number:</label>
               <input
@@ -176,13 +192,10 @@ export default function Admin() {
                 style={{ marginLeft: 8, width: 120 }}
                 placeholder="e.g. 123"
               />
-              <Button
-                style={{ marginLeft: 12 }}
-                variant="primary"
-                onClick={handleQueryCrnUser}
-              >
-                Query CRN User
-              </Button>
+              
+              <Button onClick={handleQueryCrnUser}>
+              Query CRN User
+            </Button>
             </div>
             <Modal show={modalShow} onHide={() => setModalShow(false)}>
               <Modal.Header closeButton>
@@ -243,6 +256,52 @@ export default function Admin() {
             </Modal>
           </Card.Body>
         </Card>
+
+        {/* <br /> */}
+
+        {/* Delete all CRN Users section */}
+        {/* <Card>
+          <h2 className="text-center mb-4">DO NOT USE: Danger Zone</h2>
+          <Card.Body>
+            <Button variant="outlined" color="error" onClick={async () => {
+              const db = getFirestore();
+              const colRef = db.collection ? db.collection("crnUsers") : null;
+              // Use Firestore v9 modular API
+              const { getDocs, collection, deleteDoc } = await import("firebase/firestore");
+              const docsSnap = await getDocs(collection(db, "crnUsers"));
+              if (docsSnap.empty) {
+                Swal.fire("No documents found", "crnUsers collection is already empty.", "info");
+                return;
+              }
+              Swal.fire({
+                title: "Are you sure?",
+                text: `This will delete ALL CRN User documents (${docsSnap.size}). This cannot be undone!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete All",
+                cancelButtonText: "Cancel"
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  let errorCount = 0;
+                  for (const doc of docsSnap.docs) {
+                    try {
+                      await deleteDoc(doc.ref);
+                    } catch {
+                      errorCount++;
+                    }
+                  }
+                  Swal.fire(
+                    errorCount === 0 ? "All documents deleted!" : "Some documents failed to delete.",
+                    errorCount === 0 ? "All CRN User documents have been deleted." : `${errorCount} documents failed to delete.`,
+                    errorCount === 0 ? "success" : "error"
+                  );
+                }
+              });
+            }}>
+              Delete ALL CRN User Documents
+            </Button>
+          </Card.Body>
+        </Card> */}
       </div>
     </Container>
   );
