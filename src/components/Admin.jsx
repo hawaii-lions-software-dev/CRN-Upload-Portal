@@ -179,10 +179,11 @@ export default function Admin() {
         <Card>
           <h2 className="text-center mb-4">CRN Number Changes</h2>
           <Card.Body>
-            Use this to View/Update who has access to a specific CRN number.
-            <br />
-            <br />
             <div style={{ marginBottom: 16 }}>
+              <strong>Use this to View/Update who has access to a specific CRN number.</strong>
+            </div>
+            
+            <div style={{ marginTop: 16, marginBottom: 16 }}>
               <label htmlFor="crnNumberInput">Enter CRN Number:</label>
               <input
                 id="crnNumberInput"
@@ -196,6 +197,25 @@ export default function Admin() {
               <Button onClick={handleQueryCrnUser}>
               Query CRN User
             </Button>
+            <div className="mb-3">
+              <div className="alert alert-info" style={{ fontSize: '1rem', lineHeight: '1.7', padding: '1rem' }}>
+                <strong>Frequent Issues:</strong>
+                <ul style={{ marginTop: 8, marginBottom: 0 }}>
+                  <li>
+                    <strong>A Lion has successfully logged in but cannot see their CRN Number:</strong><br />
+                    Ensure you have inputted the correct email address <span style={{ fontStyle: 'italic' }}>(ask the Lion what email they signed in with)</span>.
+                  </li>
+                  <li>
+                    <strong>A Lion has forgot their password:</strong><br />
+                    Instruct them the default password is <span style={{ fontWeight: 'bold', color: '#d63384' }}>&quot;imuagary&quot;</span>. If that does not work, instruct them to reset their password using <span style={{ fontWeight: 'bold' }}>&quot;Forgot Password?&quot;</span>.
+                  </li>
+                  <li>
+                    <strong>A Lion Cannot Login:</strong><br />
+                    Contact <a href="mailto:kobeyarai@hawaiilions.org">Kobey Arai</a> at <span style={{ fontWeight: 'bold' }}>kobeyarai@hawaiilions.org</span>.
+                  </li>
+                </ul>
+              </div>
+            </div>
             </div>
             <Modal show={modalShow} onHide={() => setModalShow(false)}>
               <Modal.Header closeButton>
@@ -206,7 +226,7 @@ export default function Admin() {
                   <div style={{ color: 'red' }}>{modalError}</div>
                 ) : (
                   <>
-                    <div>Email array for CRN {crnNumber}:</div>
+                    <div>Email addresses for CRN {crnNumber}:</div>
                     {modalEditMode ? (
                       <>
                         {modalData.map((item, idx) => (

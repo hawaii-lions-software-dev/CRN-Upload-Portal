@@ -7,6 +7,7 @@ import {
   Button,
   Typography,
   Container,
+  Box,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { app, firestore } from "../firebase";
@@ -19,7 +20,38 @@ import { Col, Row } from "react-bootstrap";
 import "../Dashboard.css";
 import { getDates } from "../utils/authHelpers";
 
-export default function Dashboard() {
+// Simple ErrorBoundary for Dashboard
+class DashboardErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    // You can log errorInfo to a service here
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Container style={{ marginTop: 40 }}>
+          <Typography variant="h4" color="error" gutterBottom>
+            Something went wrong in the Dashboard.
+          </Typography>
+          <Typography variant="body1" color="error">
+            {this.state.error?.message || "Unknown error."}
+          </Typography>
+        </Container>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default Dashboard;
+
+function Dashboard() {
   const storage = getStorage(app);
   const [imageUpload, setImageUpload] = useState(null);
   const [crnNumber, setCrnNumber] = useState("");
@@ -101,108 +133,127 @@ export default function Dashboard() {
     setFilename(name);
   };
 
-  return (
-    <>
-      <Container
-        className="align-items-center justify-content-center"
-        style={{ minHeight: "100vh" }}
-      >
-        <Typography variant="h3" gutterBottom>
-          D50 Hawaii Lions CRN Report Submission Portal
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Please select the Cabinet Meeting Date and CRN Number. When these
-          options are selected, choose the <strong>MICROSOFT WORD FILE!</strong>{" "}
-          that you wish to upload, then press the submit button. Your upload
-          will only be recieved if you press the "Submit" button. If successful,
-          you should see a pop up with a green checkmark. If you do not see a
-          pop up,{" "}
-          <strong>
-            please contact the Hawaii Lions Information Technology Committee at
-            informationtechnology@hawaiilions.org or Call Lion Kobey for IT
-            Support at (808)542-7606.
-          </strong>{" "}
-          Mahalo!
-        </Typography>
-        <Typography variant="body1" gutterBottom className="padding-element">
-          If you need help or have questions (could not upload file, website
-          down, etc.),{" "}
-          <strong>
-            please contact the Hawaii Lions Information Technology Committee at
-            informationtechnology@hawaiilions.org or Call Lion Kobey for IT
-            Support at (808)542-7606.
-          </strong>{" "}
-          Mahalo!
-        </Typography>
-        <Row className="padding-element">
-          <Col>
-            <FormControl sx={{ minWidth: 200 }} size="small">
-              <InputLabel>Cabinet Meeting Date</InputLabel>
-              <Select
-                label="Cabinet Meeting Date"
-                value={cabinetMeetingDate}
-                onChange={(event) => {
-                  setCabinetMeetingDate(event.target.value);
-                }}
-              >
-                {dates.map((date) => (
-                  (new Date() < date.dueDate) ? <MenuItem value={date.value}>{date.text}</MenuItem> : <MenuItem value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem>
-                ))
-                }
-              </Select>
-            </FormControl>
-          </Col>
-        </Row>
-        <Row className="padding-element">
-          <Col>
-            <FormControl sx={{ minWidth: 140 }} size="small">
-              <InputLabel>CRN Number</InputLabel>
-              <Select
-                label="CRN Number"
-                value={crnNumber}
-                onChange={(event) => {
-                  setCrnNumber(event.target.value);
-                }}
-              >
-                {error && <strong>Error: {JSON.stringify(error)}</strong>}
-                {loading && <span>Collection: Loading...</span>}
-                {value &&
-                  value.docs?.map((crn) => (
-                    <MenuItem value={crn.id} key={crn.id}>
-                      {crn.id}
-                    </MenuItem>
+    return (
+      <DashboardErrorBoundary>
+        <Container
+          className="align-items-center justify-content-center"
+          style={{ minHeight: "100vh" }}
+        >
+          <Typography variant="h3" gutterBottom>
+            D50 Hawaii Lions CRN Report Submission Portal
+          </Typography>
+          <Box mb={2} p={2} sx={{ background: '#f8f9fa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              Instructions
+            </Typography>
+            <ol style={{ paddingLeft: 20, marginBottom: 0 }}>
+              <li>
+                <Typography variant="body1">
+                  <strong>Select the Cabinet Meeting Date</strong> and <strong>CRN Number</strong> from the dropdown menus.
+                </Typography>
+              </li>
+              <li>
+                <Typography variant="body1">
+                  Choose the <span style={{ color: '#1976d2', fontWeight: 600 }}>MICROSOFT WORD FILE</span> you wish to upload.
+                </Typography>
+              </li>
+              <li>
+                <Typography variant="body1">
+                  Press the <strong>Submit</strong> button. Your upload will only be received if you press "Submit".
+                </Typography>
+              </li>
+              <li>
+                <Typography variant="body1">
+                  If successful, you will see a pop up with a <span style={{ color: 'green', fontWeight: 600 }}>green checkmark</span>.
+                </Typography>
+              </li>
+              <li>
+                <Typography variant="body1">
+                  If you do <strong>not</strong> see a pop up, or have any issues (could not upload file, website down, etc.), please contact:
+                </Typography>
+                <ul style={{ marginTop: 8, marginBottom: 0 }}>
+                  <li>
+                    <strong>Hawaii Lions Information Technology Committee</strong><br />
+                    <a href="mailto:informationtechnology@hawaiilions.org">informationtechnology@hawaiilions.org</a>
+                  </li>
+                  <li>
+                    <strong>Call Lion Kobey for IT Support:</strong> <span style={{ fontWeight: 600 }}>(808) 542-7606</span>
+                  </li>
+                </ul>
+                <span style={{ fontWeight: 600 }}>Mahalo!</span>
+              </li>
+            </ol>
+          </Box>
+          <Row className="padding-element">
+            <Col>
+              <FormControl sx={{ minWidth: 200 }} size="small">
+                <InputLabel>Cabinet Meeting Date</InputLabel>
+                <Select
+                  label="Cabinet Meeting Date"
+                  value={cabinetMeetingDate}
+                  onChange={(event) => {
+                    setCabinetMeetingDate(event.target.value);
+                  }}
+                >
+                  {dates.map((date, idx) => (
+                    (new Date() < date.dueDate)
+                      ? <MenuItem key={date.value || idx} value={date.value}>{date.text}</MenuItem>
+                      : <MenuItem key={"deadline-" + (date.value || idx)} value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem>
                   ))}
-              </Select>
-            </FormControl>
-          </Col>
-        </Row>
-        <Row className="padding-element">
-          <Col>
-            <Button variant="outlined" component="label">
-              Choose File
-              <input
-                type="file"
-                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                hidden
-                multiple={true}
-                onChange={(event) => {
-                  setImageUpload(event.target.files);
-                  handleFileUpload(event);
-                }}
-              />
-            </Button>
-            &nbsp; File Choosen:{" "}
-            {filename !== "" ? filename : "No File Selected"}
-          </Col>
-        </Row>
-        <Row className="padding-element">
-          <Col>
-            <Button variant="outlined" onClick={uploadImage}>
-              Submit
-            </Button>
-          </Col>
-        </Row>
-      </Container>
-    </>
+                </Select>
+              </FormControl>
+            </Col>
+          </Row>
+          <Row className="padding-element">
+            <Col>
+              <FormControl sx={{ minWidth: 140 }} size="small">
+                <InputLabel>CRN Number</InputLabel>
+                <Select
+                  label="CRN Number"
+                  value={crnNumber}
+                  onChange={(event) => {
+                    setCrnNumber(event.target.value);
+                  }}
+                >
+                  {error && <strong>Error: {JSON.stringify(error)}</strong>}
+                  {loading && <span>Collection: Loading...</span>}
+                  {value &&
+                    value.docs?.map((crn) => (
+                        <MenuItem value={crn.id} key={crn.id}>
+                          {crn.id}
+                        </MenuItem>
+                      ))}
+                </Select>
+              </FormControl>
+            </Col>
+          </Row>
+          <Row className="padding-element">
+            <Col>
+              <Button variant="outlined" component="label">
+                Choose File
+                <input
+                  type="file"
+                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  hidden
+                  multiple={true}
+                  onChange={(event) => {
+                    setImageUpload(event.target.files);
+                    handleFileUpload(event);
+                  }}
+                />
+              </Button>
+              &nbsp; File Choosen:{" "}
+              {filename !== "" ? filename : "No File Selected"}
+            </Col>
+          </Row>
+          <Row className="padding-element">
+            <Col>
+              <Button variant="outlined" onClick={uploadImage}>
+                Submit
+              </Button>
+            </Col>
+          </Row>
+        </Container>
+      </DashboardErrorBoundary>
   );
 }
