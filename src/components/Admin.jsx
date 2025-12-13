@@ -1,4 +1,3 @@
-import React from "react";
 import { Container } from "react-bootstrap";
 import NewCabinetMeetingsCard from "./admin/NewCabinetMeetingsCard";
 import ExportCRNsCard from "./admin/ExportCRNsCard";

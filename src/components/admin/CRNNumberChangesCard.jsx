@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Modal } from "react-bootstrap";
 import { Button } from "@mui/material";
 import { getFirestore, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";

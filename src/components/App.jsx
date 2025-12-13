@@ -1,4 +1,3 @@
-import React from "react";
 import Signup from "./Signup";
 import { AuthProvider } from "../contexts/AuthContext";
 import { Routes, Route } from "react-router-dom";

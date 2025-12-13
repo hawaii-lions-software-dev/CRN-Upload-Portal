@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Button, TextField } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { clearConfigCache } from "../../utils/authHelpers";
 import Swal from "sweetalert2";
