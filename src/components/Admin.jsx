@@ -1,9 +1,12 @@
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Container, Modal } from "react-bootstrap";
 import { getFirestore, doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { getAuth, fetchSignInMethodsForEmail } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { getStorage, listAll, ref, getDownloadURL } from "firebase/storage";
+import { app } from "../firebase";
 import {
   Button,
   FormControl,
@@ -34,13 +37,38 @@ const downloadFolderAsZip = async (cabinetMeetingDate) => {
 };
 
 export default function Admin() {
-  const dates = adminDates();
+  const [dates, setDates] = useState([]);
+  const [datesLoading, setDatesLoading] = useState(true);
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
   const [crnNumber, setCrnNumber] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [modalData, setModalData] = useState([]);
   const [modalEditMode, setModalEditMode] = useState(false);
   const [modalSaving, setModalSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  
+  // Load dates from Firestore
+  useEffect(() => {
+    adminDates().then(fetchedDates => {
+      setDates(fetchedDates);
+      setDatesLoading(false);
+    }).catch(error => {
+      console.error("Error loading admin dates:", error);
+      setDatesLoading(false);
+    });
+  }, []);
+  
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldownSeconds > 0) {
+      const timer = setTimeout(() => {
+        setCooldownSeconds(cooldownSeconds - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldownSeconds]);
+  
   const handleEditEmailArray = () => {
     setModalEditMode(true);
   };
@@ -64,10 +92,38 @@ export default function Admin() {
   const handleSaveEmailArray = async () => {
     setModalSaving(true);
     setModalError("");
+    // Pad with 0 if under 10 and not already padded
+    let saveCrn = crnNumber;
+    if (/^\d+$/.test(crnNumber) && Number(crnNumber) < 10 && crnNumber.length < 2) {
+      saveCrn = "0" + Number(crnNumber);
+    }
     try {
       const db = getFirestore();
-      const docRef = doc(db, "crnUsers", crnNumber);
+      const docRef = doc(db, "crnUsers", saveCrn);
       await updateDoc(docRef, { email: modalData });
+
+      // Create Firebase Auth accounts for new emails using a Cloud Function (to avoid logging in as the new user)
+      const auth = getAuth();
+      const functions = getFunctions(app);
+      const createUser = httpsCallable(functions, "adminCreateUser");
+      for (const email of modalData) {
+        try {
+          // Check if email already has an account
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if ((!methods || methods.length === 0) && !!email) {
+            // Call Cloud Function to create user with default password
+            await createUser({ email: email, password: "imuagary" });
+          }
+        } catch (err) {
+          // Ignore error if user already exists, otherwise show error
+          if (err.code !== "auth/email-already-in-use") {
+            setModalError("Error creating user for " + email + ": " + err.message);
+            setModalSaving(false);
+            return;
+          }
+        }
+      }
+
       setModalEditMode(false);
     } catch (err) {
       setModalError("Error saving email array: " + err.message);
@@ -92,9 +148,14 @@ export default function Admin() {
       setModalShow(true);
       return;
     }
+    // Pad with 0 if under 10 and not already padded
+    let lookupCrn = crnNumber;
+    if (/^\d+$/.test(crnNumber) && Number(crnNumber) < 10 && crnNumber.length < 2) {
+      lookupCrn = "0" + Number(crnNumber);
+    }
     try {
       const db = getFirestore();
-      const docRef = doc(db, "crnUsers", crnNumber);
+      const docRef = doc(db, "crnUsers", lookupCrn);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -114,7 +175,7 @@ export default function Admin() {
     setModalShow(true);
   };
 
-  const handleExportFileClick = () => {
+  const handleExportFileClick = async () => {
     if (cabinetMeetingDate === "") {
       Swal.fire(
         "Cabinet Meeting Date Not Found",
@@ -123,7 +184,31 @@ export default function Admin() {
       );
       return;
     }
-    downloadFolderAsZip(cabinetMeetingDate);
+    
+    if (isExporting || cooldownSeconds > 0) {
+      return; // Prevent multiple clicks or clicks during cooldown
+    }
+    
+    setIsExporting(true);
+    try {
+      await downloadFolderAsZip(cabinetMeetingDate);
+      Swal.fire(
+        "Export Successful",
+        "The CRN files have been downloaded as a ZIP file.",
+        "success"
+      );
+      // Start 20-second cooldown after successful export
+      setCooldownSeconds(20);
+    } catch (error) {
+      console.error("Error exporting files:", error);
+      Swal.fire(
+        "Export Failed",
+        "An error occurred while exporting the files. Please try again.",
+        "error"
+      );
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -159,17 +244,22 @@ export default function Admin() {
                 onChange={(event) => {
                   setCabinetMeetingDate(event.target.value);
                 }}
+                disabled={datesLoading}
               >
-                {
-                  dates.map((date, idx) => (
+                {datesLoading && <MenuItem value="">Loading dates...</MenuItem>}
+                {!datesLoading && dates.map((date, idx) => (
                     <MenuItem key={date.value || idx} value={date.value}>{date.text}</MenuItem>
                   ))
                 }
               </Select>
             </FormControl>
-            <Button onClick={handleExportFileClick}>
-              Export CRN's in Database for{" "}
-              {cabinetMeetingDate !== "" ? cabinetMeetingDate : "N/A"}
+            <Button onClick={handleExportFileClick} disabled={isExporting || cooldownSeconds > 0}>
+              {isExporting 
+                ? "Exporting..." 
+                : cooldownSeconds > 0 
+                  ? `Wait ${cooldownSeconds}s...`
+                  : `Export CRN's in Database for ${cabinetMeetingDate !== "" ? cabinetMeetingDate : "N/A"}`
+              }
             </Button>
           </Card.Body>
         </Card>
@@ -208,10 +298,6 @@ export default function Admin() {
                   <li>
                     <strong>A Lion has forgot their password:</strong><br />
                     Instruct them the default password is <span style={{ fontWeight: 'bold', color: '#d63384' }}>&quot;imuagary&quot;</span>. If that does not work, instruct them to reset their password using <span style={{ fontWeight: 'bold' }}>&quot;Forgot Password?&quot;</span>.
-                  </li>
-                  <li>
-                    <strong>A Lion Cannot Login:</strong><br />
-                    Contact <a href="mailto:kobeyarai@hawaiilions.org">Kobey Arai</a> at <span style={{ fontWeight: 'bold' }}>kobeyarai@hawaiilions.org</span>.
                   </li>
                 </ul>
               </div>

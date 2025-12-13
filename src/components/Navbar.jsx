@@ -13,7 +13,6 @@ import MenuItem from "@mui/material/MenuItem";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Alert } from "react-bootstrap";
-import { isAdmin } from "../utils/authHelpers";
 
 const pages = ["edit-profile"];
 const settings = ["edit-profile"];
@@ -22,7 +21,7 @@ function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [error, setError] = useState("");
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isUserAdmin, adminCheckLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
@@ -114,7 +113,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {isAdmin(currentUser.email) && (
+                  {!adminCheckLoading && isUserAdmin && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link
@@ -173,7 +172,7 @@ function Navbar() {
                     </Link>
                   </Button>
                 ))}
-                {isAdmin(currentUser.email) && (
+                {!adminCheckLoading && isUserAdmin && (
                   <Button
                     key="admin"
                     onClick={handleCloseUserMenu}
@@ -239,7 +238,7 @@ function Navbar() {
                       </Typography>
                     </MenuItem>
                   ))}
-                  {isAdmin(currentUser.email) && (
+                  {!adminCheckLoading && isUserAdmin && (
                     <MenuItem key="admin" onClick={handleCloseUserMenu}>
                       <Typography textAlign="center">
                         <Link

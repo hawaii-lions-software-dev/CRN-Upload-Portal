@@ -1,10 +1,13 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { isAdmin } from "../utils/authHelpers";
 
 export default function LoginGuard({ children }) {
-  const { currentUser } = useAuth();
+  const { isUserAdmin, adminCheckLoading } = useAuth();
 
-  return isAdmin(currentUser.email) ? children : <Navigate to="/" />;
+  if (adminCheckLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return isUserAdmin ? children : <Navigate to="/" />;
 }

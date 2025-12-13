@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FormControl,
   InputLabel,
@@ -59,7 +59,19 @@ function Dashboard() {
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
   const sendMail = httpsCallable(functions, 'sendMail');
-  const dates = getDates();
+  const [dates, setDates] = useState([]);
+  const [datesLoading, setDatesLoading] = useState(true);
+
+  // Load dates from Firestore
+  useEffect(() => {
+    getDates().then(fetchedDates => {
+      setDates(fetchedDates);
+      setDatesLoading(false);
+    }).catch(error => {
+      console.error("Error loading dates:", error);
+      setDatesLoading(false);
+    });
+  }, []);
 
   const [value, loading, error] = useCollection(
     query(
@@ -194,8 +206,10 @@ function Dashboard() {
                   onChange={(event) => {
                     setCabinetMeetingDate(event.target.value);
                   }}
+                  disabled={datesLoading}
                 >
-                  {dates.map((date, idx) => (
+                  {datesLoading && <MenuItem value="">Loading dates...</MenuItem>}
+                  {!datesLoading && dates.map((date, idx) => (
                     (new Date() < date.dueDate)
                       ? <MenuItem key={date.value || idx} value={date.value}>{date.text}</MenuItem>
                       : <MenuItem key={"deadline-" + (date.value || idx)} value={""}>Deadline passed, email Cabinet Secretary to Submit CRN</MenuItem>

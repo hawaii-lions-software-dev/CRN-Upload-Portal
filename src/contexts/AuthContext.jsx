@@ -8,6 +8,7 @@ import {
   updateEmail,
   updatePassword,
 } from "firebase/auth";
+import { isAdmin } from "../utils/authHelpers";
 
 const AuthContext = React.createContext();
 
@@ -18,6 +19,8 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
   const [loading, setLoading] = useState(true);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [adminCheckLoading, setAdminCheckLoading] = useState(true);
 
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
@@ -48,8 +51,30 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  // Check admin status whenever currentUser changes
+  useEffect(() => {
+    if (currentUser?.email) {
+      setAdminCheckLoading(true);
+      isAdmin(currentUser.email)
+        .then(result => {
+          setIsUserAdmin(result);
+          setAdminCheckLoading(false);
+        })
+        .catch(error => {
+          console.error("Error checking admin status:", error);
+          setIsUserAdmin(false);
+          setAdminCheckLoading(false);
+        });
+    } else {
+      setIsUserAdmin(false);
+      setAdminCheckLoading(false);
+    }
+  }, [currentUser]);
+
   const value = {
     currentUser,
+    isUserAdmin,
+    adminCheckLoading,
     login,
     logout,
     resetPassword,
