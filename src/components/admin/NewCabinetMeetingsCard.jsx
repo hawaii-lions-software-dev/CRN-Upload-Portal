@@ -130,7 +130,7 @@ export default function NewCabinetMeetingsCard() {
               <TextField
                 fullWidth
                 size="small"
-                placeholder="e.g., January 2026 Cabinet Meeting"
+                placeholder="e.g., 1/2/2025 or 10/12/2025"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 disabled={isSubmitting}

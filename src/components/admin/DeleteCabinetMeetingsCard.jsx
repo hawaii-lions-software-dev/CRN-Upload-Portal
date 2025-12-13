@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from "react-bootstrap";
 import { Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-import { clearConfigCache, adminDates } from "../../utils/authHelpers";
+import { clearConfigCache, getDates } from "../../utils/authHelpers";
 import Swal from "sweetalert2";
 
 export default function DeleteCabinetMeetingsCard() {
@@ -19,7 +19,7 @@ export default function DeleteCabinetMeetingsCard() {
   const loadDates = async () => {
     setDatesLoading(true);
     try {
-      const fetchedDates = await adminDates();
+      const fetchedDates = await getDates();
       setDates(fetchedDates);
     } catch (error) {
       console.error("Error loading admin dates:", error);
