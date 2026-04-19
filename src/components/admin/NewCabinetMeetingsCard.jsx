@@ -161,7 +161,7 @@ export default function NewCabinetMeetingsCard() {
               <Form.Label>CRN Submission Due Date</Form.Label>
               <DatePicker
                 value={dueDate}
-                onChange={(newValue) => setDueDate(newValue)}
+                onChange={(newValue) => setDueDate(newValue ? newValue.hour(23).minute(59).second(59).millisecond(999) : null)}
                 disabled={isSubmitting}
                 maxDate={cabinetMeetingDate ? cabinetMeetingDate.subtract(1, 'day') : undefined}
                 slotProps={{
