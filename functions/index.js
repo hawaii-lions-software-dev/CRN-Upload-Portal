@@ -1,6 +1,8 @@
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
+const { initializeApp } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+const { getFirestore } = require("firebase-admin/firestore");
+initializeApp();
 
 exports.adminCreateUser = functions.https.onCall(async (request) => {
   // Optional: Only allow authenticated admins to call this function
@@ -21,7 +23,7 @@ exports.adminCreateUser = functions.https.onCall(async (request) => {
     // Check if user already exists
     let user;
     try {
-      user = await admin.auth().getUserByEmail(email);
+      user = await getAuth().getUserByEmail(email);
       // If found, just return success (or you can throw an error if you want)
       return { result: "User already exists", uid: user.uid };
     } catch (err) {
@@ -29,7 +31,7 @@ exports.adminCreateUser = functions.https.onCall(async (request) => {
       if (err.code !== "auth/user-not-found") throw err;
     }
 
-    user = await admin.auth().createUser({
+    user = await getAuth().createUser({
       email,
       password,
     });
@@ -73,7 +75,7 @@ exports.sendCrnConfirmation = onCall(
     }
 
     // Only confirm CRNs assigned to this user (the same check the dashboard's dropdown uses).
-    const crnDoc = await admin.firestore().collection("crnUsers").doc(crn).get();
+    const crnDoc = await getFirestore().collection("crnUsers").doc(crn).get();
     const assigned = crnDoc.exists ? crnDoc.get("email") || [] : [];
     if (!assigned.includes(email)) {
       throw new HttpsError("permission-denied", "That CRN is not assigned to you.");

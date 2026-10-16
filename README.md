@@ -127,15 +127,19 @@ All of this is in **US East (N. Virginia), `us-east-1`**. Replace `ACCOUNT_ID` w
 
 ## Testing functions
 
-You can call `sendCrnConfirmation` from the command line, against either a local emulator or the
-deployed function. Both send a real email through SES to the account you sign in as, and both read
-the live `crnUsers` collection. The commands below need `curl` and `jq` (`brew install jq`).
+Both functions are callable functions in `us-central1`. You can call them from the command line,
+against either a local emulator or the deployed functions. Only the functions emulator runs
+locally, so both ways use the live Firestore, Authentication and SES: test emails are really sent,
+and test accounts are really created. The commands below need `curl` and `jq` (`brew install jq`).
 
-### 1. Get an ID token
+| Function | Called from | What it does |
+| --- | --- | --- |
+| `sendCrnConfirmation` | Dashboard, after an upload | Emails the signed-in user a submission confirmation |
+| `adminCreateUser` | Admin → CRN Number Changes, on **Save** | Creates a Firebase Authentication account for each new email on a CRN |
 
-Callable functions need a Firebase ID token for a real user. Sign in with an account that's
-assigned to at least one CRN. Run this from the repo root so it can read the API key from
-`.env.local`:
+### Get an ID token
+
+Run this from the repo root so it can read the API key from `.env.local`:
 
 ```sh
 API_KEY=$(grep VITE_FIREBASE_API_KEY .env.local | cut -d= -f2)
@@ -145,22 +149,11 @@ ID_TOKEN=$(curl -s "https://identitytoolkit.googleapis.com/v1/accounts:signInWit
   -d '{"email":"YOUR_EMAIL@hawaiilions.org","password":"YOUR_PASSWORD","returnSecureToken":true}' | jq -r .idToken)
 ```
 
-Don't commit real credentials or paste them into this file. The token expires after one hour, so
-run this again if calls start failing with `UNAUTHENTICATED`.
+For `sendCrnConfirmation`, sign in with an account that's assigned to at least one CRN. Don't
+commit real credentials or paste them into this file. The token expires after one hour, so run
+this again if calls start failing with `UNAUTHENTICATED`.
 
-### 2a. Call the deployed function
-
-```sh
-curl -s -X POST "https://us-central1-hawaii-lions.cloudfunctions.net/sendCrnConfirmation" \
-  -H "Authorization: Bearer $ID_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{"data":{"crn":"39","meetingDate":"10-18-2026","fileCount":1}}'
-```
-
-Replace `39` with a CRN whose `crnUsers` document lists your email. The request body must wrap the
-arguments in `data`, the same way the Firebase client SDK does.
-
-### 2b. Run the function locally
+### Run the functions locally
 
 1. Give the emulator the SES access key. Create `functions/.secret.local`, which is gitignored:
 
@@ -169,7 +162,8 @@ arguments in `data`, the same way the Firebase client SDK does.
    AWS_SES_SECRET_ACCESS_KEY=...
    ```
 
-   The non-secret settings come from `functions/.env.hawaii-lions` automatically.
+   Only `sendCrnConfirmation` needs these. The non-secret settings come from
+   `functions/.env.hawaii-lions` automatically.
 
 2. Start the functions emulator:
 
@@ -178,22 +172,34 @@ arguments in `data`, the same way the Firebase client SDK does.
    npm run serve
    ```
 
-   Only the functions emulator runs, so the function reads and writes the live Firestore. If it
-   fails with a credentials error, run `gcloud auth application-default login` and start it again.
+   If it fails with a credentials error, run `gcloud auth application-default login` and start it
+   again.
 
-3. In another terminal, get an ID token (step 1), then call the local URL:
+3. In another terminal, call a function with the local base URL in the examples below.
 
-   ```sh
-   curl -s -X POST "http://127.0.0.1:5001/hawaii-lions/us-central1/sendCrnConfirmation" \
-     -H "Authorization: Bearer $ID_TOKEN" \
-     -H 'Content-Type: application/json' \
-     -d '{"data":{"crn":"39","meetingDate":"10-18-2026","fileCount":1}}'
-   ```
+Changes to `functions/index.js` reload without restarting the emulator. Logs print in the
+emulator's terminal and in the Emulator UI at http://127.0.0.1:4000.
 
-   Changes to `functions/index.js` reload without restarting the emulator. Logs print in the
-   emulator's terminal and in the Emulator UI at http://127.0.0.1:4000.
+| Target | Base URL |
+| --- | --- |
+| Deployed | `https://us-central1-hawaii-lions.cloudfunctions.net` |
+| Local emulator | `http://127.0.0.1:5001/hawaii-lions/us-central1` |
 
-### Expected responses
+The request body must wrap the arguments in `data`, the same way the Firebase client SDK does.
+
+### `sendCrnConfirmation`
+
+```sh
+BASE_URL=https://us-central1-hawaii-lions.cloudfunctions.net   # or the local emulator URL
+
+curl -s -X POST "$BASE_URL/sendCrnConfirmation" \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"data":{"crn":"39","meetingDate":"10-18-2026","fileCount":1}}'
+```
+
+Replace `39` with a CRN whose `crnUsers` document lists your email. `meetingDate` is
+`MM-DD-YYYY`, the same value the dashboard sends.
 
 | Response | Meaning |
 | --- | --- |
@@ -203,6 +209,34 @@ arguments in `data`, the same way the Firebase client SDK does.
 | `{"error":{"message":"You must be signed in.","status":"UNAUTHENTICATED"}}` | The token is missing or expired. Get a new one. |
 | `{"error":{"message":"Could not send the confirmation email.","status":"INTERNAL"}}` | SES rejected the send. See the function logs and [Troubleshooting](#troubleshooting). |
 
+### `adminCreateUser`
+
+```sh
+BASE_URL=https://us-central1-hawaii-lions.cloudfunctions.net   # or the local emulator URL
+
+curl -s -X POST "$BASE_URL/adminCreateUser" \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"data":{"email":"crn-test@example.com","password":"TEST_PASSWORD"}}'
+```
+
+- It only creates the sign-in account. It doesn't add the email to any CRN. The admin page does
+  that separately by writing to the CRN's `crnUsers` document.
+- If an account already exists for that email, it does nothing and returns the existing `uid`. It
+  doesn't change that account's password.
+- The admin check in the function is currently commented out, so it doesn't require an ID token
+  yet. Send one anyway so the command keeps working once the check is turned back on.
+- Use a throwaway address. Delete the test account afterward in the Firebase console →
+  **Authentication** → **Users**.
+
+| Response | Meaning |
+| --- | --- |
+| `{"result":{"result":"User created","uid":"..."}}` | The account was created |
+| `{"result":{"result":"User already exists","uid":"..."}}` | An account already exists for that email. Nothing changed. |
+| `{"error":{"message":"Email is required.","status":"INVALID_ARGUMENT"}}` | `email` is missing or empty |
+| `{"error":{"message":"Password is required.","status":"INVALID_ARGUMENT"}}` | `password` is missing or empty |
+| `{"error":{"message":"...","status":"INTERNAL"}}` | Firebase Authentication rejected it. The message says why, for example a badly formed email or a password shorter than 6 characters. |
+
 ## Deploying
 
 ```sh
@@ -210,11 +244,13 @@ npm run build
 firebase deploy --only hosting,functions
 ```
 
-To deploy one part, use `--only hosting` or `--only functions:sendCrnConfirmation`.
+To deploy one part, use `--only hosting`, `--only functions:sendCrnConfirmation` or
+`--only functions:adminCreateUser`.
 
 ## Troubleshooting
 
-To see function errors, run `firebase functions:log --only sendCrnConfirmation`.
+To see function errors, run `firebase functions:log --only sendCrnConfirmation` (or
+`--only adminCreateUser`).
 
 | Error | Likely cause |
 | --- | --- |
