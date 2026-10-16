@@ -124,6 +124,15 @@ export default function NewCabinetMeetingsCard() {
     <Card>
       <h2 className="text-center mb-4">New Cabinet Meetings</h2>
       <Card.Body>
+        <div
+          className="alert alert-info"
+          style={{ fontSize: "1rem", lineHeight: "1.7", padding: "1rem" }}
+        >
+          <strong>CRN due dates cut off submissions at 11:59 PM HST on the date you choose.</strong>
+          <br />
+          After that, members see &quot;Deadline passed&quot; for this meeting and can no longer
+          upload to it. Due dates can&apos;t be changed after the meeting is created.
+        </div>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Form>
             <Form.Group className="mb-3">
@@ -175,9 +184,7 @@ export default function NewCabinetMeetingsCard() {
               />
               <Form.Text className="text-muted">
                 Deadline for clubs to submit their CRN reports (must be before the cabinet meeting
-                date). Members can upload until 11:59 PM Hawaii time (HST) on this date. After that,
-                the meeting shows as &quot;Deadline passed&quot; in their dropdown and they can no
-                longer select it. Due dates can&apos;t be edited after the meeting is created.
+                date). Submissions close at 11:59 PM HST on this date.
               </Form.Text>
             </Form.Group>
 
