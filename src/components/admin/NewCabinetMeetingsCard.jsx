@@ -66,10 +66,12 @@ export default function NewCabinetMeetingsCard() {
         return;
       }
 
+      // Uploads close at 11:59:59 PM Hawaii time (UTC-10, no daylight saving) on the due date,
+      // whatever time zone the admin's browser is in.
       const newDateEntry = {
         value: formattedValue,
         text: displayName.trim(),
-        dueDate: dueDate.toDate().toISOString()
+        dueDate: new Date(`${dueDate.format("YYYY-MM-DD")}T23:59:59.999-10:00`).toISOString()
       };
 
       // Update config/dates document
@@ -98,7 +100,7 @@ export default function NewCabinetMeetingsCard() {
       // Success message
       Swal.fire(
         "Cabinet Meeting Created!",
-        `Successfully created cabinet meeting "${displayName.trim()}" for ${formattedValue} with due date ${dueDate.format('M/D/YYYY')}.`,
+        `Successfully created cabinet meeting "${displayName.trim()}" for ${formattedValue} with due date ${dueDate.format('M/D/YYYY')} at 11:59 PM HST.`,
         "success"
       );
 
@@ -161,7 +163,7 @@ export default function NewCabinetMeetingsCard() {
               <Form.Label>CRN Submission Due Date</Form.Label>
               <DatePicker
                 value={dueDate}
-                onChange={(newValue) => setDueDate(newValue ? newValue.hour(23).minute(59).second(59).millisecond(999) : null)}
+                onChange={(newValue) => setDueDate(newValue)}
                 disabled={isSubmitting}
                 maxDate={cabinetMeetingDate ? cabinetMeetingDate.subtract(1, 'day') : undefined}
                 slotProps={{
@@ -172,7 +174,10 @@ export default function NewCabinetMeetingsCard() {
                 }}
               />
               <Form.Text className="text-muted">
-                Deadline for clubs to submit their CRN reports (must be before the cabinet meeting date).
+                Deadline for clubs to submit their CRN reports (must be before the cabinet meeting
+                date). Members can upload until 11:59 PM Hawaii time (HST) on this date. After that,
+                the meeting shows as &quot;Deadline passed&quot; in their dropdown and they can no
+                longer select it. Due dates can&apos;t be edited after the meeting is created.
               </Form.Text>
             </Form.Group>
 

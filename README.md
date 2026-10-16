@@ -8,9 +8,10 @@ email. Admins manage cabinet meeting dates and CRN assignments and export submis
 | --- | --- |
 | Web app (`src/`) | React + Vite, Material UI, hosted on Firebase Hosting |
 | Sign-in | Firebase Authentication (email/password) |
-| Data | Cloud Firestore (`crnUsers`, `users`, `config`) |
+| Data | Cloud Firestore (`crnUsers`, `config`) |
 | Uploaded files | Cloud Storage, stored as `<meeting date>/<CRN>-<email>-<timestamp>-<filename>` |
 | Server code (`functions/`) | Cloud Functions for Firebase (Node 24) |
+| Security rules | `firestore.rules`, `storage.rules` |
 | Confirmation email | Amazon SES, called from the `sendCrnConfirmation` function |
 
 The Firebase project is `hawaii-lions` (see `.firebaserc`).
@@ -50,6 +51,89 @@ project, so uploads and emails are real.
 | `npm run dev` | Start the dev server |
 | `npm run build` | Build to `dist/` |
 | `npm run preview` | Serve the built `dist/` locally |
+
+## How the app works
+
+### Firestore data
+
+| Document | Shape | Used for |
+| --- | --- | --- |
+| `config/adminEmails` | `{ emails: ["a@hawaiilions.org", ...] }` | Who can open `/admin` |
+| `config/dates` | `{ dates: [{ value: "MM-DD-YYYY", text, dueDate: "<ISO timestamp>" }] }` | Meetings members can upload to |
+| `config/adminDates` | `{ dates: [{ value: "MM-DD-YYYY", text }] }` | Meetings admins can export |
+| `crnUsers/<CRN>` | `{ email: ["member@example.com", ...] }` | Who can submit for each CRN |
+
+- `value` is the meeting date. It's also the Storage folder name and the `meetingDate` sent to
+  `sendCrnConfirmation`. `text` is the display name admins type in.
+- CRN document IDs below 10 are zero-padded (`"05"`, not `"5"`). The admin page adds the zero
+  for you.
+- Emails must match the member's sign-in email exactly. Firebase stores sign-in emails in lowercase.
+
+### Admin access
+
+A user is an admin if their email is in `config/adminEmails`. Edit that document in the Firebase
+console to add or remove admins. There's no admin page for it.
+
+### Member accounts
+
+Members can't sign up themselves. The `/signup` page only says to contact the IT Committee. To
+give someone access:
+
+1. On the admin page, open **CRN Number Changes**, look up the CRN, click **Edit**, add their
+   email, then **Save**.
+2. Saving updates `crnUsers/<CRN>`, then calls `adminCreateUser` for each email on the CRN. Emails
+   that don't have an account yet get one with the default password set in
+   `src/components/admin/CRNNumberChangesCard.jsx`. Existing accounts are left alone.
+3. Tell the member to sign in with the default password and change it under **Edit Profile**, or
+   use **Forgot Password?** on the login page.
+
+Removing an email from a CRN takes away access to that CRN, but doesn't delete the account. Delete
+accounts in the Firebase console → **Authentication** → **Users**.
+
+### Cabinet meetings and deadlines
+
+Creating a meeting on the admin page adds it to both `config/dates` and `config/adminDates`, with
+`dueDate` set to **11:59:59 PM Hawaii time (HST)** on the due date. The due date must be before the
+meeting date.
+
+- Until the due date, the meeting shows in the member's **Cabinet Meeting Date** dropdown.
+- After it, the dropdown shows "Deadline passed, email Cabinet Secretary to Submit CRN" instead
+  and members can't select the meeting.
+- The deadline is checked in the browser only. Storage rules don't enforce it.
+- There's no way to edit a due date in the app. Change `dueDate` on that meeting's entry in
+  `config/dates` in the Firebase console.
+
+### Removing a meeting
+
+**Remove Cabinet Meeting Dates** only removes the meeting from `config/dates`, so members no longer
+see it. It stays in `config/adminDates`, so admins can still export its files, and no uploaded
+files are deleted.
+
+If you remove a meeting and then create it again with the same date, it's listed twice in the
+export dropdown. Delete the extra entry from `config/adminDates` in the Firebase console.
+
+### Security rules
+
+`firestore.rules` and `storage.rules` control what the web app can read and write. Cloud Functions
+use the Admin SDK, so the rules don't apply to them.
+
+| Who | Firestore | Storage |
+| --- | --- | --- |
+| Signed-in member | Read `config/*`; read the `crnUsers` documents that list their email | Upload new files (under 50 MB) into `<MM-DD-YYYY>/` for a CRN they're assigned to |
+| Admin | Read and write `config/*` and `crnUsers/*` | List and download all files |
+| Anyone else | Nothing | Nothing |
+
+Nobody can overwrite or delete files through the app. Storage rules check the CRN at the start of
+the file name, not the email in it.
+
+Deploy rule changes on their own, after testing them:
+
+```sh
+firebase deploy --only firestore:rules,storage
+```
+
+Storage rules read Firestore to look up admins and CRN assignments. The first time you deploy
+them, the CLI asks to give Storage permission to read Firestore. Say yes.
 
 ## Confirmation emails (Amazon SES)
 
@@ -244,6 +328,8 @@ npm run build
 firebase deploy --only hosting,functions
 ```
 
+This doesn't deploy security rules. See [Security rules](#security-rules).
+
 To deploy one part, use `--only hosting`, `--only functions:sendCrnConfirmation` or
 `--only functions:adminCreateUser`.
 
@@ -257,6 +343,8 @@ To see function errors, run `firebase functions:log --only sendCrnConfirmation` 
 | `AccessDenied` | `CRN_FROM_ADDRESS`, the region, the domain or the configuration set name doesn't match the IAM policy |
 | `MessageRejected` / "Email address is not verified" | The SES account is still in the sandbox, or the address is on a domain SES hasn't verified |
 | `permission-denied` returned to the browser | The signed-in user isn't listed in that CRN's `crnUsers` document |
+| Member signs in but sees no CRN | Their email in `crnUsers` doesn't exactly match the email they sign in with |
+| Upload fails with `storage/unauthorized` | The member isn't assigned to that CRN, or the file is 50 MB or larger |
 | Upload succeeds but no email arrives | Check the recipient's spam folder, then the SES account suppression list (an earlier bounce or complaint blocks the address) |
 
 For IT support, contact the Hawaii Lions Information Technology Committee at

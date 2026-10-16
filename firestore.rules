@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// The web app's access to Firestore. Cloud Functions use the Admin SDK and skip these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email in get(/databases/$(database)/documents/config/adminEmails).data.emails;
+    }
+
+    // adminEmails, dates, adminDates. Every signed-in user reads these (the app checks
+    // adminEmails to decide whether to show the admin panel); only admins change them.
+    match /config/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // crnUsers/<CRN> = { email: [...] }. Members see only the CRNs they're assigned to
+    // (the dashboard's array-contains query); admins see and edit all of them.
+    match /crnUsers/{crn} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.token.email in resource.data.email);
+      allow write: if isAdmin();
+    }
+
+    // Everything else, including the unused users collection, is denied by default.
+  }
+}

@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Uploaded CRN files: <meeting date>/<CRN>-<email>-<timestamp>-<filename>
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in firestore.get(/databases/(default)/documents/config/adminEmails).data.emails;
+    }
+
+    function assignedTo(crn) {
+      return request.auth != null
+        && request.auth.token.email in firestore.get(/databases/(default)/documents/crnUsers/$(crn)).data.email;
+    }
+
+    match /{meetingDate}/{fileName} {
+      // Admins list and download files for the export.
+      allow read: if isAdmin();
+
+      // Members add new files for CRNs assigned to them. They can't overwrite or delete files.
+      // The upload deadline is only enforced by the dashboard, not here.
+      allow create: if meetingDate.matches('[0-9]{2}-[0-9]{2}-[0-9]{4}')
+        && assignedTo(fileName.split('-')[0])
+        && request.resource.size < 50 * 1024 * 1024;
+    }
+  }
+}
