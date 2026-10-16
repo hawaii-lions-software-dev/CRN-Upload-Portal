@@ -58,7 +58,7 @@ function Dashboard() {
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
-  const sendMail = httpsCallable(functions, 'sendMail');
+  const sendCrnConfirmation = httpsCallable(functions, "sendCrnConfirmation");
   const [dates, setDates] = useState([]);
   const [datesLoading, setDatesLoading] = useState(true);
 
@@ -110,27 +110,43 @@ function Dashboard() {
         "error"
       );
     } else {
-      for (let i = 0; i < imageUpload.length; i++) {
-        const fileRef = ref(
-          storage,
-          `${cabinetMeetingDate}/${crnNumber}-${
-            currentUser.email
-          }-${new Date().toISOString()}-${imageUpload[i].name}`
-        );
-        uploadBytes(fileRef, imageUpload[i]).then(() => {
+      const files = Array.from(imageUpload);
+      Promise.all(
+        files.map((file) =>
+          uploadBytes(
+            ref(
+              storage,
+              `${cabinetMeetingDate}/${crnNumber}-${
+                currentUser.email
+              }-${new Date().toISOString()}-${file.name}`
+            ),
+            file
+          )
+        )
+      )
+        .then(() => {
           Swal.fire(
-            "File Uploaded Successfully",
-            "If you uploaded multiple files, this message will appear multiple times.",
+            "CRN Submitted Successfully",
+            `${files.length} file${files.length === 1 ? "" : "s"} uploaded. A confirmation email will be sent to ${currentUser.email}.`,
             "success"
           );
-        });
-        sendMail({ crn: crnNumber, dest: currentUser.email })
-          .then((result) => {
-            // Read result of the Cloud Function.
-            var sanitizedMessage = result.data.text;
-            console.log(sanitizedMessage);
+          // One confirmation per submission. Best effort: the upload already succeeded.
+          sendCrnConfirmation({
+            crn: crnNumber,
+            meetingDate: cabinetMeetingDate,
+            fileCount: files.length,
+          }).catch((err) => {
+            console.warn("Confirmation email failed:", err);
           });
-      }
+        })
+        .catch((err) => {
+          console.error("Upload failed:", err);
+          Swal.fire(
+            "Upload Failed",
+            "Your CRN could not be uploaded. Please try again, or contact the Hawaii Lions Information Technology Committee at informationtechnology@hawaiilions.org.",
+            "error"
+          );
+        });
     }
   };
 
