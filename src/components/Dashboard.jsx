@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { app, firestore } from "../firebase";
-import { getStorage, uploadBytes, ref } from "firebase/storage";
+import { getStorage, uploadBytesResumable, ref } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 import { where, limit, query, collection } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
@@ -56,6 +56,8 @@ function Dashboard() {
   const [imageUpload, setImageUpload] = useState(null);
   const [crnNumber, setCrnNumber] = useState("");
   const [cabinetMeetingDate, setCabinetMeetingDate] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { currentUser } = useAuth();
   const functions = getFunctions(app);
   const sendCrnConfirmation = httpsCallable(functions, "sendCrnConfirmation");
@@ -110,20 +112,35 @@ function Dashboard() {
         "error"
       );
     } else {
+      if (uploading) {
+        return;
+      }
       const files = Array.from(imageUpload);
-      Promise.all(
-        files.map((file) =>
-          uploadBytes(
-            ref(
-              storage,
-              `${cabinetMeetingDate}/${crnNumber}-${
-                currentUser.email
-              }-${new Date().toISOString()}-${file.name}`
-            ),
-            file
-          )
-        )
-      )
+      const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+      const bytesSent = files.map(() => 0);
+      setUploading(true);
+      setUploadProgress(0);
+
+      // Resumable uploads send each file in chunks and retry after short network drops.
+      const tasks = files.map((file, idx) => {
+        const task = uploadBytesResumable(
+          ref(
+            storage,
+            `${cabinetMeetingDate}/${crnNumber}-${
+              currentUser.email
+            }-${new Date().toISOString()}-${file.name}`
+          ),
+          file
+        );
+        task.on("state_changed", (snapshot) => {
+          bytesSent[idx] = snapshot.bytesTransferred;
+          const sent = bytesSent.reduce((sum, n) => sum + n, 0);
+          setUploadProgress(totalBytes ? Math.round((sent / totalBytes) * 100) : 100);
+        });
+        return task;
+      });
+
+      Promise.all(tasks)
         .then(() => {
           Swal.fire(
             "CRN Submitted Successfully",
@@ -140,12 +157,18 @@ function Dashboard() {
           });
         })
         .catch((err) => {
+          // Stop the other files so a retry doesn't leave a half-uploaded set behind.
+          tasks.forEach((task) => task.cancel());
           console.error("Upload failed:", err);
-          Swal.fire(
-            "Upload Failed",
-            "Your CRN could not be uploaded. Please try again, or contact the Hawaii Lions Information Technology Committee at informationtechnology@hawaiilions.org.",
-            "error"
-          );
+          const code = err?.code || err?.name || "unknown";
+          Swal.fire({
+            icon: "error",
+            title: "Upload Failed",
+            html: `Your CRN could not be uploaded. Please try again, or contact the Hawaii Lions Information Technology Committee at informationtechnology@hawaiilions.org.<br><br><small>Error code: <strong>${code}</strong>. Please include this if you contact us.</small>`,
+          });
+        })
+        .finally(() => {
+          setUploading(false);
         });
     }
   };
@@ -278,9 +301,14 @@ function Dashboard() {
           </Row>
           <Row className="padding-element">
             <Col>
-              <Button variant="outlined" onClick={uploadImage}>
-                Submit
+              <Button variant="outlined" onClick={uploadImage} disabled={uploading}>
+                {uploading ? `Uploading... ${uploadProgress}%` : "Submit"}
               </Button>
+              {uploading && (
+                <span style={{ marginLeft: 12 }}>
+                  Please keep this page open until the upload finishes.
+                </span>
+              )}
             </Col>
           </Row>
         </Container>
