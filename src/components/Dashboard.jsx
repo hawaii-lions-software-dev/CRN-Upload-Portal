@@ -170,7 +170,7 @@ function Dashboard() {
           <Typography variant="h3" gutterBottom>
             D50 Hawaii Lions CRN Report Submission Portal
           </Typography>
-          <Box mb={2} p={2} sx={{ background: '#f8f9fa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+          <Box sx={{ mb: 2, p: 2, background: '#f8f9fa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               Instructions
             </Typography>
